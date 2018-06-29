@@ -1,8 +1,10 @@
-﻿// $Author: $
-// $Date: $
-// $Revision: $
+﻿/* 
+*   Project: PerformanceTestCollections
+*   Author: Luiz Felipe Machado da Silva
+*   Github: http://github.com/lfmachadodasilva/PerformanceTest
+*/
 
-namespace PerformanceTest
+namespace PerformanceTestCollections
 {
     using System;
     using System.Linq;
@@ -12,8 +14,10 @@ namespace PerformanceTest
 
     static class Program
     {
-        private const int NUMBER_OF_ITERACTIONS = 10000000;
-        private const int WAINT_TIME_SECONDS = 0 * 1000;
+        private const int NUMBER_OF_ITERACTIONS = int.MaxValue;
+
+        private const int FROM_VALUE = 1;
+        private const int TO_VALUE = 2;
 
         private static readonly Data[] _dataArray = new Data[NUMBER_OF_ITERACTIONS];
         private static readonly List<Data> _dataList = new List<Data>();
@@ -23,22 +27,29 @@ namespace PerformanceTest
         {
             for (int i = 0; i < NUMBER_OF_ITERACTIONS; i++)
             {
-                _dataList.Add(new Data { Value = 1 });
-                _dataArray[i] = new Data { Value = 1 };
+                _dataList.Add(new Data { Value = FROM_VALUE });
+                _dataArray[i] = new Data { Value = FROM_VALUE };
             }
 
-            _tests.Add(nameof(SimpleArray), SimpleArray);
-            _tests.Add(nameof(SimpleList), SimpleList);
-            _tests.Add(nameof(ListLinq), ListLinq);
-            _tests.Add(nameof(ListParallelLinq), ListParallelLinq);
-            _tests.Add(nameof(UpdateArray), UpdateArray);
-            _tests.Add(nameof(UpdateList), UpdateList);
+            _tests.Add(nameof(CreateArrayAndChangeAllValues), CreateArrayAndChangeAllValues);
+            _tests.Add(nameof(CreateListAndChangeAllValues), CreateListAndChangeAllValues);
+            _tests.Add(nameof(CreateListAndChangeAllValuesLinq), CreateListAndChangeAllValuesLinq);
+            _tests.Add(nameof(InitListParallelLinq), InitListParallelLinq);
+            _tests.Add(nameof(UpdateArrayUsingAFor), UpdateArrayUsingAFor);
+            _tests.Add(nameof(UpdateListUsingAFor), UpdateListUsingAFor);
             _tests.Add(nameof(UpdateListLinq), UpdateListLinq);
-            _tests.Add(nameof(UpdateListParallelLinq), UpdateListParallelLinq);
-            _tests.Add(nameof(UpdateListParallelLinq2), UpdateListParallelLinq2);
+            _tests.Add(nameof(UpdateValueListParallelLinq), UpdateValueListParallelLinq);
+            _tests.Add(nameof(UpdateValueListParallelLinq2), UpdateValueListParallelLinq2);
             
             foreach (KeyValuePair<string, Action> test in _tests)
             {
+                for (int i = 0; i < NUMBER_OF_ITERACTIONS; i++)
+                {
+                    // reset values
+                    _dataList[i].Value = FROM_VALUE;
+                    _dataArray[i].Value = FROM_VALUE;
+                }
+
                 Console.WriteLine("Test: " + test.Key);
 
                 Stopwatch stopWatch = new Stopwatch();
@@ -51,19 +62,19 @@ namespace PerformanceTest
             }
         }
 
-        private static void UpdateArray()
+        private static void UpdateArrayUsingAFor()
         {
             for (int i = 0; i < NUMBER_OF_ITERACTIONS; i++)
             {
-                _dataArray[i].Value = 2;
+                _dataArray[i].Value = TO_VALUE;
             }
         }
 
-        private static void UpdateList()
+        private static void UpdateListUsingAFor()
         {
             for (int i = 0; i < NUMBER_OF_ITERACTIONS; i++)
             {
-                _dataList[i].Value = 2;
+                _dataList[i].Value = TO_VALUE;
             }
         }
 
@@ -72,75 +83,68 @@ namespace PerformanceTest
             _dataList.ForEach(x => x.Value = 2);
         }
 
-        private static void UpdateListParallelLinq()
+        private static void UpdateValueListParallelLinq()
         {
             Parallel.ForEach(_dataList, x => { x.Value = 2; });
         }
 
-        private static void UpdateListParallelLinq2()
+        private static void UpdateValueListParallelLinq2()
         {
             _dataList.AsParallel().ForAll(x => { x.Value = 2; });
         }
 
-        private static void SimpleArray()
+        private static void CreateArrayAndChangeAllValues()
         {
             Data[] test = new Data[NUMBER_OF_ITERACTIONS];
 
             for (int i = 0; i < NUMBER_OF_ITERACTIONS; i++)
             {
-                test[i] = new Data { Value = 1 };
+                test[i] = new Data { Value = FROM_VALUE };
             }
 
             for (int i = 0; i < NUMBER_OF_ITERACTIONS; i++)
             {
-                test[i].Value = 2;
+                test[i].Value = TO_VALUE;
             }
         }
 
-        private static void SimpleList()
+        private static void CreateListAndChangeAllValues()
         {
             List<Data> test = new List<Data>();
 
             for (int i = 0; i < NUMBER_OF_ITERACTIONS; i++)
             {
-                test.Add(new Data { Value = 1 });
+                test.Add(new Data { Value = FROM_VALUE });
             }
 
             for (int i = 0; i < NUMBER_OF_ITERACTIONS; i++)
             {
-                test[i].Value = 2;
+                test[i].Value = TO_VALUE;
             }
         }
 
-        private static void ListLinq()
+        private static void CreateListAndChangeAllValuesLinq()
         {
             List<Data> test = new List<Data>();
 
             for (int i = 0; i < NUMBER_OF_ITERACTIONS; i++)
             {
-                test.Add(new Data { Value = 1 });
+                test.Add(new Data { Value = FROM_VALUE });
             }
 
-            test.ForEach(x => x.Value = 2);
+            test.ForEach(x => x.Value = TO_VALUE);
         }
 
-        private static void ListParallelLinq()
+        private static void InitListParallelLinq()
         {
             List<Data> test = new List<Data>();
 
             for (int i = 0; i < NUMBER_OF_ITERACTIONS; i++)
             {
-                test.Add(new Data { Value = 1});
+                test.Add(new Data { Value = FROM_VALUE });
             }
 
-            Parallel.ForEach(test, x => { x.Value = 2; });
-        }
-
-        public class TestData
-        {
-            public string TestName { get; set; }
-
-            public Action TestAction { get; set; }
+            Parallel.ForEach(test, x => { x.Value = TO_VALUE; });
         }
 
         public class Data
